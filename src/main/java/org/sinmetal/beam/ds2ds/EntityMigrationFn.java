@@ -16,7 +16,11 @@ public class EntityMigrationFn extends DoFn<Entity, Entity> {
     private static Map<String, String> migrationPropertyNameMap = new HashMap<>();
 
     static {
-        migrationPropertyNameMap.put("", "");
+        migrationPropertyNameMap.put("OrganizationId", "OrganizationID");
+        migrationPropertyNameMap.put("Url", "URL");
+        migrationPropertyNameMap.put("LogoUrl", "LogoURL");
+        migrationPropertyNameMap.put("SlackPostUrl", "SlackPostURL");
+        migrationPropertyNameMap.put("Owner.UserId", "Owner.UserID");
     }
 
     @ProcessElement
