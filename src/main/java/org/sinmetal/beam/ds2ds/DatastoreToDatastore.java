@@ -55,7 +55,7 @@ public class DatastoreToDatastore {
         for (String kind : kinds) {
             KindExpression kindExpression = KindExpression.newBuilder().setName(kind).build();
             Query getKindQuery = Query.newBuilder().addKind(kindExpression).build();
-            p.apply(DatastoreIO.v1().read().withProjectId(options.getInputProjectId()).withQuery(getKindQuery))
+            p.apply(kind, DatastoreIO.v1().read().withProjectId(options.getInputProjectId()).withQuery(getKindQuery))
                     .apply(new EntityMigration())
                     .apply(DatastoreIO.v1().write().withProjectId(options.getOutputProjectId()));
         }
