@@ -13,6 +13,17 @@ Cloud Dataflowを使って、Cloud DatastoreのMigrationを行う。
 * Datastore Namespace
 * Entity Filter
 
+## IAM
+
+どのProjectでDataflowを起動するかによりけりなので、Datastore移行先のProjectで動かす場合について以下に記す
+
+Datastore移行元のProjectのIAMに、Datastore移行先のProjectのDataflowのサービスアカウントを `datastore.user` として追加する
+
+* {target project number}-compute@developer.gserviceaccount.com
+* {target project number}@cloudservices.gserviceaccount.com
+
+DataflowのIAMについては https://cloud.google.com/dataflow/security-and-permissions?hl=ja#cloud-platform--cloud-datastore- を参考にする
+
 ## Run
 
 ```
