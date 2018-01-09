@@ -6,6 +6,7 @@ import com.google.datastore.v1.Value;
 import org.apache.beam.sdk.transforms.DoFn;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,25 +29,32 @@ public class EntityMigrationFn extends DoFn<Entity, Entity> {
         Entity currentEntity = c.element();
         
         Key currentEntityKey = currentEntity.getKey();
-        Key.Builder keyBuilder = Key.newBuilder();
-        Key.PathElement currentKeyPath = currentEntityKey.getPath(0);
-        Key.PathElement.Builder keyPathBuilder = Key.PathElement.newBuilder();
-        keyPathBuilder.setKind(currentKeyPath.getKind());
-        if (currentKeyPath.getId() != 0) {
-            keyPathBuilder.setId(currentKeyPath.getId());
-        } else {
-            keyPathBuilder.setName(currentKeyPath.getName());
-        }
-        keyBuilder.addPath(keyPathBuilder.build());
-        Key key = keyBuilder.build();
 
+        // KeyにはApplicationIDが含まれているので、別GCP Projectに移行する時はKeyを作り直す必要がある
+        Key newEntityKey = buildKey(currentEntityKey.getPathList());
         Entity.Builder newEntityBuilder = Entity.newBuilder();
-        newEntityBuilder.setKey(key);
+        newEntityBuilder.setKey(newEntityKey);
         for (Map.Entry<String, Value> entry : currentEntity.getPropertiesMap().entrySet()) {
             newEntityBuilder.putProperties(migrationPropertyName(entry.getKey()), entry.getValue());
         }
 
         c.output(newEntityBuilder.build());
+    }
+
+    private Key buildKey(List<Key.PathElement> pathElements) {
+        // TODO Namespanceの情報が入ってないような気がする
+        Key.Builder keyBuilder = Key.newBuilder();
+        for (Key.PathElement pathElement : pathElements) {
+            Key.PathElement.Builder keyPathBuilder = Key.PathElement.newBuilder();
+            keyPathBuilder.setKind(pathElement.getKind());
+            if (pathElement.getId() != 0) {
+                keyPathBuilder.setId(pathElement.getId());
+            } else {
+                keyPathBuilder.setName(pathElement.getName());
+            }
+            keyBuilder.addPath(keyPathBuilder.build());
+        }
+        return keyBuilder.build();
     }
 
     private String migrationPropertyName(String propertyName) {
