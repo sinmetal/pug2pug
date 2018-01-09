@@ -5,7 +5,6 @@ import com.google.datastore.v1.KindExpression;
 import com.google.datastore.v1.Query;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.extensions.gcp.options.GcpOptions;
-import org.apache.beam.sdk.io.TextIO;
 import org.apache.beam.sdk.io.gcp.datastore.DatastoreIO;
 import org.apache.beam.sdk.options.Default;
 import org.apache.beam.sdk.options.Description;
@@ -19,7 +18,7 @@ public class DatastoreToDatastore {
     public interface DatastoreToDatastoreOptions extends GcpOptions {
 
         @Description("Input Datastore Kind CSV.")
-        @Default.String("input")
+        @Default.String("k1,k2")
         String getInputKinds();
 
         void setInputKinds(String value);
@@ -55,6 +54,8 @@ public class DatastoreToDatastore {
         for (String kind : kinds) {
             KindExpression kindExpression = KindExpression.newBuilder().setName(kind).build();
             Query getKindQuery = Query.newBuilder().addKind(kindExpression).build();
+
+            // TODO Namespaceの考慮
             p.apply(kind, DatastoreIO.v1().read().withProjectId(options.getInputProjectId()).withQuery(getKindQuery))
                     .apply(new EntityMigration())
                     .apply(DatastoreIO.v1().write().withProjectId(options.getOutputProjectId()));
